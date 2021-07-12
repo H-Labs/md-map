@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

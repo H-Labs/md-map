@@ -1,0 +1,31 @@
+{
+  "name": "md-map",
+  "version": "0.0.1",
+  "description": "Markdown to mindmap.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H-Labs/md-map.git"
+  },
+  "keywords": [
+    "Markdown",
+    "mindmap",
+    "md-map"
+  ],
+  "author": "H-Labs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/H-Labs/md-map/issues"
+  },
+  "homepage": "https://github.com/H-Labs/md-map#readme",
+  "devDependencies": {
+    "@types/node": "^16.3.1",
+    "markdown-it": "^12.1.0",
+    "markdown-it-mark": "^3.0.1",
+    "markdown-it-sub": "^1.0.0",
+    "markdown-it-sup": "^1.0.0"
+  }
+}
