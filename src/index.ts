@@ -14,12 +14,15 @@ interface ParseConfig {
 }
 
 interface MapItem {
+  id: number,
+  parent: number | undefined,
+  type: LineType,
   raw: string,
   html: string,
 }
 
 interface MapTree extends MapItem {
-  children?: Array<MapTree>,
+  children: Array<MapTree>,
 }
 
 enum LineType {
@@ -111,7 +114,7 @@ function parseLine(line: string, index: number) {
     ...parseLineData(line),
     raw: line,
     html: mdIt.render(line)
-      .replace('\n', ''),
+      .replace(/\n/g, ''),
   };
 
   return data;
@@ -123,18 +126,99 @@ function parseLines(lines: Array<string>): Array<LineData> {
   return lineData;
 }
 
-function parse(md: string, config?: ParseConfig): MapTree {
-  let tree: MapTree = {
+const tree: MapTree = {
+  id: 0,
+  parent: undefined,
+  type: LineType.Empty,
+  raw: '',
+  html: '',
+  children: [],
+};
+
+function pushToTree(item: MapTree, id?: number): void {
+  if (id === undefined) {
+    tree.raw = item.raw;
+    tree.html = item.html;
+  } if (id === 0) {
+    tree.children.push(item);
+  } else {
+    for (let i = tree.children.length - 1; i >= 0; i -= 1) {
+      const level2 = tree.children[i];
+      if (level2.id === id) {
+        tree.children[i]
+          .children.push(item);
+        break;
+      }
+
+      for (let j = level2.children.length - 1; j >= 0; j -= 1) {
+        const level3 = level2.children[j];
+        if (level3.id === id) {
+          tree.children[i]
+            .children[j]
+            .children.push(item);
+          break;
+        }
+      }
+    }
+  }
+}
+
+function generateTree(list: Array<LineData>): void {
+  let parentId: number | undefined = undefined;
+  let lastItem: MapTree = {
+    id: 0,
+    parent: undefined,
+    type: LineType.Empty,
     raw: '',
     html: '',
+    children: [],
   };
 
+  for (const item of list) {
+    switch (item.type) {
+      case LineType.Heading1: // root node
+        parentId = undefined;
+        break;
+      case LineType.Heading2: // level 2
+        parentId = 0;
+        break;
+      case LineType.Heading3: // level 3
+        if (lastItem.type === LineType.Heading2) {
+          parentId = lastItem.id;
+        }
+        break;
+      case LineType.OrderedListItem:
+      case LineType.Paragraph:
+      case LineType.UnorderedListItem:
+        if ([
+          LineType.Heading1,
+          LineType.Heading2,
+          LineType.Heading3,
+        ].includes(lastItem.type)) {
+          parentId = lastItem.id;
+        }
+        break;
+    }
+    if (item.type !== LineType.Empty) {
+      lastItem = {
+        id: item.line,
+        parent: parentId,
+        ...item,
+        children: [],
+      };
+      pushToTree(lastItem, parentId);
+    }
+  }
+}
+
+function parse(md: string, config?: ParseConfig): MapTree {
   if (!md) {
     throw new Error('Markdown content is empty');
   }
 
   const lineData = parseLines(md.split('\n'));
-  console.log(lineData);
+
+  generateTree(lineData);
 
   return tree;
 }

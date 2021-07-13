@@ -87,23 +87,97 @@ function parseLineData(line) {
 }
 function parseLine(line, index) {
     var data = __assign(__assign({ line: index }, parseLineData(line)), { raw: line, html: mdIt.render(line)
-            .replace('\n', '') });
+            .replace(/\n/g, '') });
     return data;
 }
 function parseLines(lines) {
     var lineData = lines.map(function (line, index) { return parseLine(line, index); });
     return lineData;
 }
-function parse(md, config) {
-    var tree = {
+var tree = {
+    id: 0,
+    parent: undefined,
+    type: LineType.Empty,
+    raw: '',
+    html: '',
+    children: []
+};
+function pushToTree(item, id) {
+    if (id === undefined) {
+        tree.raw = item.raw;
+        tree.html = item.html;
+    }
+    if (id === 0) {
+        tree.children.push(item);
+    }
+    else {
+        for (var i = tree.children.length - 1; i >= 0; i -= 1) {
+            var level2 = tree.children[i];
+            if (level2.id === id) {
+                tree.children[i]
+                    .children.push(item);
+                break;
+            }
+            for (var j = level2.children.length - 1; j >= 0; j -= 1) {
+                var level3 = level2.children[j];
+                if (level3.id === id) {
+                    tree.children[i]
+                        .children[j]
+                        .children.push(item);
+                    break;
+                }
+            }
+        }
+    }
+}
+function generateTree(list) {
+    var parentId = undefined;
+    var lastItem = {
+        id: 0,
+        parent: undefined,
+        type: LineType.Empty,
         raw: '',
-        html: ''
+        html: '',
+        children: []
     };
+    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+        var item = list_1[_i];
+        switch (item.type) {
+            case LineType.Heading1: // root node
+                parentId = undefined;
+                break;
+            case LineType.Heading2: // level 2
+                parentId = 0;
+                break;
+            case LineType.Heading3: // level 3
+                if (lastItem.type === LineType.Heading2) {
+                    parentId = lastItem.id;
+                }
+                break;
+            case LineType.OrderedListItem:
+            case LineType.Paragraph:
+            case LineType.UnorderedListItem:
+                if ([
+                    LineType.Heading1,
+                    LineType.Heading2,
+                    LineType.Heading3,
+                ].includes(lastItem.type)) {
+                    parentId = lastItem.id;
+                }
+                break;
+        }
+        if (item.type !== LineType.Empty) {
+            lastItem = __assign(__assign({ id: item.line, parent: parentId }, item), { children: [] });
+            pushToTree(lastItem, parentId);
+        }
+    }
+}
+function parse(md, config) {
     if (!md) {
         throw new Error('Markdown content is empty');
     }
     var lineData = parseLines(md.split('\n'));
-    console.log(lineData);
+    generateTree(lineData);
     return tree;
 }
 exports["default"] = {
