@@ -1,6 +1,6 @@
 {
   "name": "md-map",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Markdown to mindmap.",
   "main": "./src/index.js",
   "scripts": {
@@ -22,11 +22,12 @@
   },
   "homepage": "https://github.com/H-Labs/md-map#readme",
   "devDependencies": {
-    "@types/node": "^16.3.1",
+    "@types/node": "^16.3.1"
+  },
+  "dependencies": {
     "markdown-it": "^12.1.0",
     "markdown-it-mark": "^3.0.1",
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0"
-  },
-  "dependencies": {}
+  }
 }
