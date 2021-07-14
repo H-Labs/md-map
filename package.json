@@ -1,5 +1,5 @@
 {
-  "name": "@h-labs/md-map",
+  "name": "md-map",
   "version": "0.0.1",
   "description": "Markdown to mindmap.",
   "main": "./src/index.js",
